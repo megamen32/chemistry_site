@@ -1340,11 +1340,11 @@
       host.innerHTML = "";
 
       const fixed = [
-        "K3[Fe(CN)6]·3H2O",
         "CuSO4·5H2O",
+        "SO4^2-",
+        "K3[Fe(CN)6]·3H2O",
         "[Co(NH3)6]Cl3",
         "(NH4)2SO4",
-        "SO4^2-",
         "NH4+",
       ];
 
@@ -1362,14 +1362,13 @@
         host.appendChild(btn);
       };
 
-      for (const entry of fixed){
-        renderItem(entry, true);
-      }
-
       const h = getHistory();
       historyCountEl && (historyCountEl.textContent = String(h.length));
       for (const entry of h){
         renderItem(entry);
+      }
+      for (const entry of fixed){
+        renderItem(entry, true);
       }
     }
 
