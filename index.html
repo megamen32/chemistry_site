@@ -257,6 +257,22 @@
       margin-top: 10px;
       line-height: 1.35;
     }
+    .conversionPanel{
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .conversionFields{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .conversionFields .field{
+      flex:1;
+      min-width: 180px;
+    }
 
     /* Sticky action bar */
     .bar{
@@ -342,23 +358,6 @@
                 <button class="segBtn" id="modeSum">Сумма (+)</button>
               </div>
             </div>
-
-            <div>
-              <div class="muted" style="font-size:12px;margin-bottom:6px;">Сортировка</div>
-              <div class="segGroup" role="group" aria-label="Сортировка">
-                <button class="segBtn" id="sortHill">Hill</button>
-                <button class="segBtn" id="sortZ">Z</button>
-                <button class="segBtn" id="sortAZ">A–Z</button>
-              </div>
-            </div>
-
-            <div>
-              <div class="muted" style="font-size:12px;margin-bottom:6px;">Атомные массы</div>
-              <div class="segGroup" role="group" aria-label="Атомные массы">
-                <button class="segBtn" id="massStd">Стандарт</button>
-                <button class="segBtn" id="massInt">Округл.</button>
-              </div>
-            </div>
           </div>
 
           <div class="chipsTitle">
@@ -413,8 +412,20 @@
             </tbody>
           </table>
 
-          <div class="note" id="noteMass">
-            «Стандарт» — усреднённые атомные массы; «Округл.» — близко к школьным, но для реальных расчётов хуже.
+          <div class="conversionPanel" aria-label="Расчёт массы и количества вещества">
+            <div class="conversionFields">
+              <div class="field">
+                <label for="massInput">Масса (г)</label>
+                <input id="massInput" type="text" inputmode="decimal" autocomplete="off" placeholder="Например 12.5" />
+              </div>
+              <div class="field">
+                <label for="molInput">Количество вещества (моль)</label>
+                <input id="molInput" type="text" inputmode="decimal" autocomplete="off" placeholder="Например 0.036" />
+              </div>
+            </div>
+            <div class="note">
+              Достаточно заполнить одно поле, второе считается автоматически на основе молярной массы.
+            </div>
           </div>
         </div>
       </section>
@@ -482,8 +493,6 @@
     const LS_KEY = "chemcalc.v2";
     const state = {
       mode: "compound",        // "compound" | "sum"
-      sort: "hill",            // "hill" | "z" | "az"
-      weights: "std",          // "std" | "int"
       tab: "atoms",            // "atoms" | "pct"
       lastCopyText: "",
       lastOk: null
@@ -494,8 +503,6 @@
         const x = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
         if (x && typeof x === "object"){
           if (x.mode) state.mode = x.mode;
-          if (x.sort) state.sort = x.sort;
-          if (x.weights) state.weights = x.weights;
           if (x.tab) state.tab = x.tab;
         }
       }catch{}
@@ -503,7 +510,7 @@
     function saveState(){
       try{
         localStorage.setItem(LS_KEY, JSON.stringify({
-          mode: state.mode, sort: state.sort, weights: state.weights, tab: state.tab,
+          mode: state.mode, tab: state.tab,
           history: getHistory()
         }));
       }catch{}
@@ -554,6 +561,91 @@
     function hideErrorCaret(){
       $("errBox").style.display = "none";
       $("errCaret").textContent = "";
+    }
+
+    const massInputEl = $("massInput");
+    const molInputEl = $("molInput");
+    let lastMolarMass = null;
+    const conversionState = { lastSource: null, lastValue: null };
+    let conversionQuiet = false;
+
+    function formatConversion(value){
+      if (!Number.isFinite(value)) return "";
+      const fixed = value.toFixed(6);
+      const trimmed = fixed.replace(/\.?0+$/, "");
+      return trimmed === "" ? "0" : trimmed;
+    }
+
+    function parseConversionInput(raw){
+      const text = (raw || "").replace(",", ".").trim();
+      if (!text) return null;
+      const num = Number(text);
+      return Number.isFinite(num) ? num : null;
+    }
+
+    function setConversionValue(el, value){
+      if (!el) return;
+      conversionQuiet = true;
+      el.value = (value !== null && value !== undefined) ? value : "";
+      conversionQuiet = false;
+    }
+
+    function handleMassInput(){
+      if (!massInputEl) return;
+      const mass = parseConversionInput(massInputEl.value);
+      conversionState.lastSource = "mass";
+      conversionState.lastValue = mass;
+      if (mass !== null && Number.isFinite(lastMolarMass) && lastMolarMass > 0){
+        const moles = mass / lastMolarMass;
+        setConversionValue(molInputEl, formatConversion(moles));
+      } else {
+        setConversionValue(molInputEl, "");
+      }
+    }
+
+    function handleMolInput(){
+      if (!molInputEl) return;
+      const mol = parseConversionInput(molInputEl.value);
+      conversionState.lastSource = "mol";
+      conversionState.lastValue = mol;
+      if (mol !== null && Number.isFinite(lastMolarMass) && lastMolarMass > 0){
+        const mass = mol * lastMolarMass;
+        setConversionValue(massInputEl, formatConversion(mass));
+      } else {
+        setConversionValue(massInputEl, "");
+      }
+    }
+
+    function refreshConversionFields(molarMass){
+      lastMolarMass = molarMass;
+      if (!massInputEl || !molInputEl) return;
+      if (!Number.isFinite(molarMass) || molarMass <= 0){
+        if (conversionState.lastSource === "mass"){
+          setConversionValue(molInputEl, "");
+        } else if (conversionState.lastSource === "mol"){
+          setConversionValue(massInputEl, "");
+        }
+        return;
+      }
+      if (conversionState.lastSource === "mass" && conversionState.lastValue !== null){
+        const moles = conversionState.lastValue / molarMass;
+        setConversionValue(molInputEl, formatConversion(moles));
+      } else if (conversionState.lastSource === "mol" && conversionState.lastValue !== null){
+        const mass = conversionState.lastValue * molarMass;
+        setConversionValue(massInputEl, formatConversion(mass));
+      }
+    }
+
+    function clearDerivedConversion(){
+      lastMolarMass = null;
+      if (conversionState.lastSource === "mass"){
+        setConversionValue(molInputEl, "");
+      } else if (conversionState.lastSource === "mol"){
+        setConversionValue(massInputEl, "");
+      } else {
+        setConversionValue(massInputEl, "");
+        setConversionValue(molInputEl, "");
+      }
     }
 
     // Pretty render
@@ -912,74 +1004,46 @@
         const n = counts[e];
         g = g ? gcd(g, n) : n;
       }
-      if (!g || g === 1) return formatFormula(counts, 1);
+      if (!g || g === 1) return formatFormula(counts);
       const reduced = Object.create(null);
       for (const e of els) reduced[e] = counts[e] / g;
-      return formatFormula(reduced, 1);
+      return formatFormula(reduced);
     }
 
-    function formatFormula(counts, sortMode){
-      // sortMode: "hill" | "z" | "az"
-      const entries = Object.entries(counts).map(([el,n]) => ({el,n, Z:PT[el]?.Z || 999}));
+    function hillOrderedEntries(counts){
+      const entries = Object.entries(counts).map(([el,n]) => ({ el, n }));
       const hasC = counts.C !== undefined;
-
-      let ordered;
-      if (sortMode === "z"){
-        ordered = entries.sort((a,b) => a.Z - b.Z);
-      } else if (sortMode === "az"){
-        ordered = entries.sort((a,b) => a.el.localeCompare(b.el));
-      } else {
-        // Hill
-        if (hasC){
-          const rest = entries.filter(x => x.el !== "C" && x.el !== "H").sort((a,b) => a.el.localeCompare(b.el));
-          ordered = [];
-          if (counts.C) ordered.push(entries.find(x => x.el === "C"));
-          if (counts.H) ordered.push(entries.find(x => x.el === "H"));
-          ordered.push(...rest);
-        } else {
-          ordered = entries.sort((a,b) => a.el.localeCompare(b.el));
-        }
+      if (hasC){
+        const c = entries.filter(x => x.el === "C");
+        const h = entries.filter(x => x.el === "H");
+        const rest = entries.filter(x => x.el !== "C" && x.el !== "H").sort((a,b) => a.el.localeCompare(b.el));
+        return [...c, ...h, ...rest];
       }
+      return entries.sort((a,b) => a.el.localeCompare(b.el));
+    }
 
+    function formatFormula(counts){
+      const ordered = hillOrderedEntries(counts);
       return ordered.map(x => x.el + (x.n === 1 ? "" : String(x.n))).join("");
     }
 
     function computeMass(counts){
-      const rounded = state.weights === "int";
       let m = 0;
       for (const [el, n] of Object.entries(counts)){
-        m += atomicWeight(el, rounded) * n;
+        m += atomicWeight(el) * n;
       }
       return m;
     }
 
     function buildTable(counts){
-      const rounded = state.weights === "int";
       const total = computeMass(counts);
-      const entries = Object.entries(counts).map(([el,n]) => {
-        const aw = atomicWeight(el, rounded);
+      const ordered = hillOrderedEntries(counts);
+      const entries = ordered.map(({el,n}) => {
+        const aw = atomicWeight(el);
         const part = aw * n;
         const pct = total ? (part / total) * 100 : 0;
-        return { el, n, aw, part, pct, Z: PT[el].Z };
+        return { el, n, aw, part, pct };
       });
-
-      // sort
-      if (state.sort === "z") entries.sort((a,b) => a.Z - b.Z);
-      else if (state.sort === "az") entries.sort((a,b) => a.el.localeCompare(b.el));
-      else {
-        // Hill
-        const hasC = counts.C !== undefined;
-        if (hasC){
-          const c = entries.filter(x => x.el === "C");
-          const h = entries.filter(x => x.el === "H");
-          const rest = entries.filter(x => x.el !== "C" && x.el !== "H").sort((a,b) => a.el.localeCompare(b.el));
-          entries.length = 0;
-          entries.push(...c, ...h, ...rest);
-        } else {
-          entries.sort((a,b) => a.el.localeCompare(b.el));
-        }
-      }
-
       return { total, entries };
     }
 
@@ -1046,9 +1110,7 @@
       $("pretty").textContent = pretty;
 
       const modeTxt = state.mode === "sum" ? "Сумма (+)" : "Соединение";
-      const sortTxt = state.sort === "hill" ? "Hill" : (state.sort === "z" ? "Z" : "A–Z");
-      const wTxt = state.weights === "std" ? "Стандартные массы" : "Округлённые массы";
-      $("previewMeta").textContent = `${modeTxt} · ${sortTxt} · ${wTxt}`;
+      $("previewMeta").textContent = modeTxt;
     }
 
     function renderTable(counts){
@@ -1098,11 +1160,10 @@
         }
       }
 
-      const rounded = state.weights === "int";
       const copyLines = entries.map(e => `${e.el}:${e.n}`).join(", ");
       const copy = `Формула: ${$("formula").value.trim()}
 Состав: ${copyLines}
-Молярная масса: ${total.toFixed(6)} g/mol${rounded ? " (округл. массы)" : ""}`;
+Молярная масса: ${total.toFixed(6)} g/mol`;
 
       return { total, copy };
     }
@@ -1112,9 +1173,10 @@
 
       const counts = parsed.counts;
       const mass = computeMass(counts);
+      refreshConversionFields(mass);
 
       $("mass").innerHTML = `${mass.toFixed(6)} <span class="unit">g/mol</span>`;
-      $("normalized").textContent = formatFormula(counts, state.sort);
+      $("normalized").textContent = formatFormula(counts);
       $("empirical").textContent = empiricalFormula(counts) || "—";
       $("charge").textContent = (parsed.charge === null) ? "—" : (parsed.charge > 0 ? `+${parsed.charge}` : `${parsed.charge}`);
 
@@ -1139,6 +1201,7 @@
       }catch(err){
         state.lastCopyText = "";
         state.lastOk = null;
+        clearDerivedConversion();
         $("mass").innerHTML = `— <span class="unit">g/mol</span>`;
         $("empirical").textContent = "—";
         $("charge").textContent = "—";
@@ -1189,29 +1252,15 @@
 
     // -------- Bind UI --------
     function bindSettings(){
-      // mode
       $("modeCompound").onclick = () => { state.mode="compound"; setActive(["modeCompound","modeSum"], "modeCompound"); saveState(); renderPreview($("formula").value); calculate(); };
       $("modeSum").onclick = () => { state.mode="sum"; setActive(["modeCompound","modeSum"], "modeSum"); saveState(); renderPreview($("formula").value); calculate(); };
 
-      // sort
-      $("sortHill").onclick = () => { state.sort="hill"; setActive(["sortHill","sortZ","sortAZ"], "sortHill"); saveState(); calculate(); };
-      $("sortZ").onclick = () => { state.sort="z"; setActive(["sortHill","sortZ","sortAZ"], "sortZ"); saveState(); calculate(); };
-      $("sortAZ").onclick = () => { state.sort="az"; setActive(["sortHill","sortZ","sortAZ"], "sortAZ"); saveState(); calculate(); };
-
-      // weights
-      $("massStd").onclick = () => { state.weights="std"; setActive(["massStd","massInt"], "massStd"); saveState(); calculate(); };
-      $("massInt").onclick = () => { state.weights="int"; setActive(["massStd","massInt"], "massInt"); saveState(); calculate(); };
-
-      // tabs
       $("tabAtoms").onclick = () => { state.tab="atoms"; setActive(["tabAtoms","tabPct"], "tabAtoms"); saveState(); calculate(); };
       $("tabPct").onclick = () => { state.tab="pct"; setActive(["tabAtoms","tabPct"], "tabPct"); saveState(); calculate(); };
     }
 
     function applyStateToUI(){
       setActive(["modeCompound","modeSum"], state.mode === "sum" ? "modeSum" : "modeCompound");
-      setActive(["sortHill","sortZ","sortAZ"],
-        state.sort === "z" ? "sortZ" : (state.sort === "az" ? "sortAZ" : "sortHill"));
-      setActive(["massStd","massInt"], state.weights === "int" ? "massInt" : "massStd");
       setActive(["tabAtoms","tabPct"], state.tab === "pct" ? "tabPct" : "tabAtoms");
     }
 
@@ -1237,6 +1286,19 @@
       clearTimeout(t);
       t = setTimeout(() => calculate(), 320);
     });
+
+    if (massInputEl){
+      massInputEl.addEventListener("input", () => {
+        if (conversionQuiet) return;
+        handleMassInput();
+      });
+    }
+    if (molInputEl){
+      molInputEl.addEventListener("input", () => {
+        if (conversionQuiet) return;
+        handleMolInput();
+      });
+    }
 
     // initial formula
     const h = getHistory();
