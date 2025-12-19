@@ -273,6 +273,69 @@
       flex:1;
       min-width: 180px;
     }
+    .concentrationDetails{
+      margin-top: 18px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      overflow: hidden;
+    }
+    .concentrationDetails summary{
+      list-style:none;
+      margin:0;
+      padding: 12px 16px;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      font-weight:600;
+      font-size: 14px;
+      color: var(--text);
+      background: linear-gradient(90deg, rgba(110,231,255,.15), rgba(167,139,250,.08));
+    }
+    .concentrationDetails summary::-webkit-details-marker{
+      display:none;
+    }
+    .concentrationDetails summary .chevron{
+      transition: transform .2s ease;
+    }
+    .concentrationDetails[open] summary .chevron{
+      transform: rotate(180deg);
+    }
+    .concentrationBody{
+      padding: 0 16px 16px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+    .concentrationResults{
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.02);
+    }
+    .concentrationRow{
+      display:flex;
+      justify-content: space-between;
+      align-items:flex-end;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .concentrationRow .value{
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .concentrationHint{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
 
     /* Sticky action bar */
     .bar{
@@ -427,6 +490,42 @@
               Достаточно заполнить одно поле, второе считается автоматически на основе молярной массы.
             </div>
           </div>
+          <details class="concentrationDetails">
+            <summary>
+              <span>Концентрации</span>
+              <span class="chevron" aria-hidden="true">▾</span>
+            </summary>
+            <div class="concentrationBody">
+              <div class="conversionFields">
+                <div class="field">
+                  <label for="volumeInput">Объём раствора (л)</label>
+                  <input id="volumeInput" type="text" inputmode="decimal" autocomplete="off" placeholder="Например 0.5" />
+                </div>
+                <div class="field">
+                  <label for="solventMassInput">Масса растворителя (г)</label>
+                  <input id="solventMassInput" type="text" inputmode="decimal" autocomplete="off" placeholder="Например 400" />
+                </div>
+              </div>
+              <div class="concentrationResults">
+                <div class="concentrationRow">
+                  <span class="muted">Молярная (M)</span>
+                  <span class="value" id="molarityResult">— mol/L</span>
+                </div>
+                <div class="concentrationRow">
+                  <span class="muted">Нормальность (N)</span>
+                  <span class="value" id="normalityResult">— eq/L</span>
+                </div>
+                <div class="concentrationRow">
+                  <span class="muted">Моляльная (m)</span>
+                  <span class="value" id="molalityResult">— mol/kg</span>
+                </div>
+                <div class="concentrationHint" id="equivalentFactor">Эквивалентность: 1</div>
+              </div>
+              <div class="note">
+                Нормальность считается как molarity × эквивалентность (абсолютный заряд или 1), а моляльность берёт количество вещества на килограмм растворителя.
+              </div>
+            </div>
+          </details>
         </div>
       </section>
     </div>
@@ -565,9 +664,17 @@
 
     const massInputEl = $("massInput");
     const molInputEl = $("molInput");
+    const volumeInputEl = $("volumeInput");
+    const solventMassInputEl = $("solventMassInput");
+    const molarityResultEl = $("molarityResult");
+    const normalityResultEl = $("normalityResult");
+    const molalityResultEl = $("molalityResult");
+    const equivalentFactorEl = $("equivalentFactor");
     let lastMolarMass = null;
     const conversionState = { lastSource: null, lastValue: null };
     let conversionQuiet = false;
+    const concentrationState = { volume: null, solventMassKg: null };
+    let lastParsedCharge = null;
 
     function formatConversion(value){
       if (!Number.isFinite(value)) return "";
@@ -601,6 +708,7 @@
       } else {
         setConversionValue(molInputEl, "");
       }
+      updateConcentrationResults();
     }
 
     function handleMolInput(){
@@ -614,6 +722,7 @@
       } else {
         setConversionValue(massInputEl, "");
       }
+      updateConcentrationResults();
     }
 
     function refreshConversionFields(molarMass){
@@ -646,6 +755,69 @@
         setConversionValue(massInputEl, "");
         setConversionValue(molInputEl, "");
       }
+      lastParsedCharge = null;
+      clearConcentrationResults();
+    }
+
+    function parseVolumeInput(raw){
+      return parseConversionInput(raw);
+    }
+
+    function parseSolventMassInput(raw){
+      const grams = parseConversionInput(raw);
+      return grams !== null ? grams / 1000 : null;
+    }
+
+    function computeEquivalentFactor(charge){
+      if (charge === null || charge === undefined) return 1;
+      const absCharge = Math.abs(charge);
+      return absCharge === 0 ? 1 : absCharge;
+    }
+
+    function getCurrentMoles(){
+      const manualMol = parseConversionInput(molInputEl?.value);
+      if (manualMol !== null) return manualMol;
+      if (!massInputEl) return null;
+      if (!Number.isFinite(lastMolarMass) || lastMolarMass <= 0) return null;
+      const massVal = parseConversionInput(massInputEl.value);
+      if (massVal === null) return null;
+      return massVal / lastMolarMass;
+    }
+
+    function updateConcentrationResults(){
+      if (!molarityResultEl) return;
+      const moles = getCurrentMoles();
+      const volume = concentrationState.volume;
+      const solventKg = concentrationState.solventMassKg;
+      const molarity = (moles !== null && volume !== null && volume > 0) ? moles / volume : null;
+      const eqFactor = computeEquivalentFactor(lastParsedCharge);
+      const normality = (molarity !== null) ? molarity * eqFactor : null;
+      const molality = (moles !== null && solventKg !== null && solventKg > 0) ? moles / solventKg : null;
+      molarityResultEl.textContent = molarity !== null ? `${formatConversion(molarity)} mol/L` : "— mol/L";
+      normalityResultEl.textContent = normality !== null ? `${formatConversion(normality)} eq/L` : "— eq/L";
+      molalityResultEl.textContent = molality !== null ? `${formatConversion(molality)} mol/kg` : "— mol/kg";
+      if (equivalentFactorEl){
+        equivalentFactorEl.textContent = `Эквивалентность: ${eqFactor}`;
+      }
+    }
+
+    function clearConcentrationResults(){
+      if (molarityResultEl) molarityResultEl.textContent = "— mol/L";
+      if (normalityResultEl) normalityResultEl.textContent = "— eq/L";
+      if (molalityResultEl) molalityResultEl.textContent = "— mol/kg";
+      if (equivalentFactorEl) equivalentFactorEl.textContent = "Эквивалентность: 1";
+    }
+
+    function handleVolumeInput(){
+      if (!volumeInputEl) return;
+      concentrationState.volume = parseVolumeInput(volumeInputEl.value);
+      updateConcentrationResults();
+    }
+
+    function handleSolventMassInput(){
+      if (!solventMassInputEl) return;
+      concentrationState.solventMassKg = parseSolventMassInput(solventMassInputEl.value);
+      updateConcentrationResults();
     }
 
     // Pretty render
@@ -1173,7 +1345,9 @@
 
       const counts = parsed.counts;
       const mass = computeMass(counts);
+      lastParsedCharge = parsed.charge;
       refreshConversionFields(mass);
+      updateConcentrationResults();
 
       $("mass").innerHTML = `${mass.toFixed(6)} <span class="unit">g/mol</span>`;
       $("normalized").textContent = formatFormula(counts);
@@ -1298,6 +1472,12 @@
         if (conversionQuiet) return;
         handleMolInput();
       });
+    }
+    if (volumeInputEl){
+      volumeInputEl.addEventListener("input", handleVolumeInput);
+    }
+    if (solventMassInputEl){
+      solventMassInputEl.addEventListener("input", handleSolventMassInput);
     }
 
     // initial formula
