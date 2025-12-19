@@ -265,7 +265,7 @@
       padding: 6px 10px;
     }
     .historyTrigger .historyIcon{
-      font-size: 14px;
+      font-size: 24px;
     }
     .concentrationDetails{
       margin-top: 18px;
@@ -418,6 +418,25 @@
       background:rgba(255,255,255,.2);
       border-radius:999px;
     }
+    .elementHintPanel{
+      position:fixed;
+      z-index:30;
+      max-width:240px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.15);
+      background: rgba(0,0,0,.75);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.4;
+      box-shadow:0 6px 26px rgba(0,0,0,.45);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .2s ease;
+    }
+    .elementHintPanel.visible{
+      opacity:1;
+    }
 
     /* Sticky action bar */
     .bar{
@@ -480,8 +499,9 @@
         <h1 class="title">Формула → состав, молярная масса, массовые доли</h1>
         <div class="historyTrigger">
           <button class="linkBtn" id="openHistoryBtn" type="button" title="Показать историю">
-            <span class="historyIcon" aria-hidden="true">☰</span>
+           
             История <span class="mono" id="historyCount">0</span>
+             <span class="historyIcon" aria-hidden="true">☰</span>
           </button>
         </div>
       </div>
@@ -772,11 +792,15 @@
     const openHistoryBtn = $("openHistoryBtn");
     const historyDrawerClose = $("historyDrawerClose");
     const historyCountEl = $("historyCount");
+    const elementHintPanel = document.createElement("div");
+    elementHintPanel.className = "elementHintPanel";
+    document.body.appendChild(elementHintPanel);
     let lastMolarMass = null;
     const conversionState = { lastSource: null, lastValue: null };
     let conversionQuiet = false;
     const concentrationState = { volume: null, solventMassKg: null };
     let lastParsedCharge = null;
+    let hintHideTimer = null;
 
     function formatConversion(value){
       if (!Number.isFinite(value)) return "";
@@ -932,6 +956,32 @@
       if (!solventMassInputEl) return;
       concentrationState.solventMassKg = parseSolventMassInput(solventMassInputEl.value);
       updateConcentrationResults();
+    }
+
+    function showElementHint(target){
+      if (!target) return;
+      const text = target.dataset.hint;
+      if (!text) return;
+      elementHintPanel.textContent = text;
+      elementHintPanel.classList.add("visible");
+      const rect = target.getBoundingClientRect();
+      requestAnimationFrame(() => {
+        const panelRect = elementHintPanel.getBoundingClientRect();
+        let left = rect.left + window.pageXOffset;
+        left = Math.min(left, window.innerWidth - panelRect.width - 12);
+        left = Math.max(12, left);
+        let top = rect.top + window.pageYOffset - panelRect.height - 8;
+        if (top < 12) top = rect.bottom + window.pageYOffset + 8;
+        elementHintPanel.style.left = `${left}px`;
+        elementHintPanel.style.top = `${top}px`;
+      });
+      clearTimeout(hintHideTimer);
+      hintHideTimer = setTimeout(hideElementHint, 2400);
+    }
+
+    function hideElementHint(){
+      elementHintPanel.classList.remove("visible");
+      clearTimeout(hintHideTimer);
     }
 
     // Pretty render
@@ -1429,10 +1479,15 @@
           const tr = document.createElement("tr");
           const hint = getElementHint(e.el);
           tr.innerHTML = `
-            <td class="mono" title="${hint}">${e.el}</td>
+            <td class="mono">${e.el}</td>
             <td class="num">${e.n}</td>
             <td class="num">${e.part.toFixed(4)}</td>
           `;
+          const cell = tr.querySelector(".mono");
+          if (cell){
+            cell.dataset.hint = hint;
+            cell.title = hint;
+          }
           tbody.appendChild(tr);
         }
       } else {
@@ -1444,13 +1499,18 @@
           </tr>`;
         tbody.innerHTML = "";
         for (const e of entries){
-          const hint = getElementHint(e.el);
           const tr = document.createElement("tr");
+          const hint = getElementHint(e.el);
           tr.innerHTML = `
-            <td class="mono" title="${hint}">${e.el}</td>
+            <td class="mono">${e.el}</td>
             <td class="num">${e.pct.toFixed(3)}</td>
             <td class="num">${e.part.toFixed(4)}</td>
           `;
+          const cell = tr.querySelector(".mono");
+          if (cell){
+            cell.dataset.hint = hint;
+            cell.title = hint;
+          }
           tbody.appendChild(tr);
         }
       }
@@ -1607,6 +1667,22 @@
     if (solventMassInputEl){
       solventMassInputEl.addEventListener("input", handleSolventMassInput);
     }
+
+    const compositionBody = $("tbody");
+    const handleElementHint = (e) => {
+      const target = e.target.closest("[data-hint]");
+      if (target) showElementHint(target);
+    };
+    if (compositionBody){
+      compositionBody.addEventListener("pointerover", handleElementHint);
+      compositionBody.addEventListener("pointerdown", handleElementHint);
+      compositionBody.addEventListener("pointerout", (e) => {
+        const next = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest("[data-hint]");
+        if (!next) hideElementHint();
+      });
+    }
+    document.addEventListener("scroll", hideElementHint, { passive:true });
+    window.addEventListener("resize", hideElementHint);
 
     // initial formula
     const h = getHistory();
