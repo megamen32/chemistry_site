@@ -638,29 +638,29 @@
   <script>
     // -------- Periodic table (Z + standard atomic weight) --------
     const PT = {
-      H:{Z:1,w:1.008},He:{Z:2,w:4.002602},
-      Li:{Z:3,w:6.94},Be:{Z:4,w:9.0121831},B:{Z:5,w:10.81},C:{Z:6,w:12.011},N:{Z:7,w:14.007},O:{Z:8,w:15.999},
-      F:{Z:9,w:18.998403163},Ne:{Z:10,w:20.1797},
-      Na:{Z:11,w:22.98976928},Mg:{Z:12,w:24.305},Al:{Z:13,w:26.9815385},Si:{Z:14,w:28.085},P:{Z:15,w:30.973761998},S:{Z:16,w:32.06},
-      Cl:{Z:17,w:35.45},Ar:{Z:18,w:39.948},
-      K:{Z:19,w:39.0983},Ca:{Z:20,w:40.078},Sc:{Z:21,w:44.955908},Ti:{Z:22,w:47.867},V:{Z:23,w:50.9415},Cr:{Z:24,w:51.9961},
-      Mn:{Z:25,w:54.938044},Fe:{Z:26,w:55.845},Co:{Z:27,w:58.933194},Ni:{Z:28,w:58.6934},Cu:{Z:29,w:63.546},Zn:{Z:30,w:65.38},
-      Ga:{Z:31,w:69.723},Ge:{Z:32,w:72.630},As:{Z:33,w:74.921595},Se:{Z:34,w:78.971},Br:{Z:35,w:79.904},Kr:{Z:36,w:83.798},
-      Rb:{Z:37,w:85.4678},Sr:{Z:38,w:87.62},Y:{Z:39,w:88.90584},Zr:{Z:40,w:91.224},Nb:{Z:41,w:92.90637},Mo:{Z:42,w:95.95},
-      Tc:{Z:43,w:98},Ru:{Z:44,w:101.07},Rh:{Z:45,w:102.90550},Pd:{Z:46,w:106.42},Ag:{Z:47,w:107.8682},Cd:{Z:48,w:112.414},
-      In:{Z:49,w:114.818},Sn:{Z:50,w:118.710},Sb:{Z:51,w:121.760},Te:{Z:52,w:127.60},I:{Z:53,w:126.90447},Xe:{Z:54,w:131.293},
-      Cs:{Z:55,w:132.90545196},Ba:{Z:56,w:137.327},
-      La:{Z:57,w:138.90547},Ce:{Z:58,w:140.116},Pr:{Z:59,w:140.90766},Nd:{Z:60,w:144.242},Pm:{Z:61,w:145},Sm:{Z:62,w:150.36},
-      Eu:{Z:63,w:151.964},Gd:{Z:64,w:157.25},Tb:{Z:65,w:158.92535},Dy:{Z:66,w:162.500},Ho:{Z:67,w:164.93033},Er:{Z:68,w:167.259},
-      Tm:{Z:69,w:168.93422},Yb:{Z:70,w:173.045},Lu:{Z:71,w:174.9668},
-      Hf:{Z:72,w:178.49},Ta:{Z:73,w:180.94788},W:{Z:74,w:183.84},Re:{Z:75,w:186.207},Os:{Z:76,w:190.23},Ir:{Z:77,w:192.217},
-      Pt:{Z:78,w:195.084},Au:{Z:79,w:196.966569},Hg:{Z:80,w:200.592},Tl:{Z:81,w:204.38},Pb:{Z:82,w:207.2},Bi:{Z:83,w:208.98040},
-      Po:{Z:84,w:209},At:{Z:85,w:210},Rn:{Z:86,w:222},
-      Fr:{Z:87,w:223},Ra:{Z:88,w:226},Ac:{Z:89,w:227},Th:{Z:90,w:232.0377},Pa:{Z:91,w:231.03588},U:{Z:92,w:238.02891},
-      Np:{Z:93,w:237},Pu:{Z:94,w:244},Am:{Z:95,w:243},Cm:{Z:96,w:247},Bk:{Z:97,w:247},Cf:{Z:98,w:251},Es:{Z:99,w:252},
-      Fm:{Z:100,w:257},Md:{Z:101,w:258},No:{Z:102,w:259},Lr:{Z:103,w:266},
-      Rf:{Z:104,w:267},Db:{Z:105,w:268},Sg:{Z:106,w:269},Bh:{Z:107,w:270},Hs:{Z:108,w:277},Mt:{Z:109,w:278},Ds:{Z:110,w:281},
-      Rg:{Z:111,w:282},Cn:{Z:112,w:285},Nh:{Z:113,w:286},Fl:{Z:114,w:289},Mc:{Z:115,w:290},Lv:{Z:116,w:293},Ts:{Z:117,w:294},Og:{Z:118,w:294},
+      H:{Z:1,w:1.008,name:"Hydrogen"},He:{Z:2,w:4.002602,name:"Helium"},
+      Li:{Z:3,w:6.94,name:"Lithium"},Be:{Z:4,w:9.0121831,name:"Beryllium"},B:{Z:5,w:10.81,name:"Boron"},C:{Z:6,w:12.011,name:"Carbon"},N:{Z:7,w:14.007,name:"Nitrogen"},O:{Z:8,w:15.999,name:"Oxygen"},
+      F:{Z:9,w:18.998403163,name:"Fluorine"},Ne:{Z:10,w:20.1797,name:"Neon"},
+      Na:{Z:11,w:22.98976928,name:"Sodium"},Mg:{Z:12,w:24.305,name:"Magnesium"},Al:{Z:13,w:26.9815385,name:"Aluminium"},Si:{Z:14,w:28.085,name:"Silicon"},P:{Z:15,w:30.973761998,name:"Phosphorus"},S:{Z:16,w:32.06,name:"Sulfur"},
+      Cl:{Z:17,w:35.45,name:"Chlorine"},Ar:{Z:18,w:39.948,name:"Argon"},
+      K:{Z:19,w:39.0983,name:"Potassium"},Ca:{Z:20,w:40.078,name:"Calcium"},Sc:{Z:21,w:44.955908,name:"Scandium"},Ti:{Z:22,w:47.867,name:"Titanium"},V:{Z:23,w:50.9415,name:"Vanadium"},Cr:{Z:24,w:51.9961,name:"Chromium"},
+      Mn:{Z:25,w:54.938044,name:"Manganese"},Fe:{Z:26,w:55.845,name:"Iron"},Co:{Z:27,w:58.933194,name:"Cobalt"},Ni:{Z:28,w:58.6934,name:"Nickel"},Cu:{Z:29,w:63.546,name:"Copper"},Zn:{Z:30,w:65.38,name:"Zinc"},
+      Ga:{Z:31,w:69.723,name:"Gallium"},Ge:{Z:32,w:72.63,name:"Germanium"},As:{Z:33,w:74.921595,name:"Arsenic"},Se:{Z:34,w:78.971,name:"Selenium"},Br:{Z:35,w:79.904,name:"Bromine"},Kr:{Z:36,w:83.798,name:"Krypton"},
+      Rb:{Z:37,w:85.4678,name:"Rubidium"},Sr:{Z:38,w:87.62,name:"Strontium"},Y:{Z:39,w:88.90584,name:"Yttrium"},Zr:{Z:40,w:91.224,name:"Zirconium"},Nb:{Z:41,w:92.90637,name:"Niobium"},Mo:{Z:42,w:95.95,name:"Molybdenum"},
+      Tc:{Z:43,w:98,name:"Technetium"},Ru:{Z:44,w:101.07,name:"Ruthenium"},Rh:{Z:45,w:102.9055,name:"Rhodium"},Pd:{Z:46,w:106.42,name:"Palladium"},Ag:{Z:47,w:107.8682,name:"Silver"},Cd:{Z:48,w:112.414,name:"Cadmium"},
+      In:{Z:49,w:114.818,name:"Indium"},Sn:{Z:50,w:118.71,name:"Tin"},Sb:{Z:51,w:121.76,name:"Antimony"},Te:{Z:52,w:127.6,name:"Tellurium"},I:{Z:53,w:126.90447,name:"Iodine"},Xe:{Z:54,w:131.293,name:"Xenon"},
+      Cs:{Z:55,w:132.90545196,name:"Cesium"},Ba:{Z:56,w:137.327,name:"Barium"},
+      La:{Z:57,w:138.90547,name:"Lanthanum"},Ce:{Z:58,w:140.116,name:"Cerium"},Pr:{Z:59,w:140.90766,name:"Praseodymium"},Nd:{Z:60,w:144.242,name:"Neodymium"},Pm:{Z:61,w:145,name:"Promethium"},Sm:{Z:62,w:150.36,name:"Samarium"},
+      Eu:{Z:63,w:151.964,name:"Europium"},Gd:{Z:64,w:157.25,name:"Gadolinium"},Tb:{Z:65,w:158.92535,name:"Terbium"},Dy:{Z:66,w:162.5,name:"Dysprosium"},Ho:{Z:67,w:164.93033,name:"Holmium"},Er:{Z:68,w:167.259,name:"Erbium"},
+      Tm:{Z:69,w:168.93422,name:"Thulium"},Yb:{Z:70,w:173.045,name:"Ytterbium"},Lu:{Z:71,w:174.9668,name:"Lutetium"},
+      Hf:{Z:72,w:178.49,name:"Hafnium"},Ta:{Z:73,w:180.94788,name:"Tantalum"},W:{Z:74,w:183.84,name:"Tungsten"},Re:{Z:75,w:186.207,name:"Rhenium"},Os:{Z:76,w:190.23,name:"Osmium"},Ir:{Z:77,w:192.217,name:"Iridium"},
+      Pt:{Z:78,w:195.084,name:"Platinum"},Au:{Z:79,w:196.966569,name:"Gold"},Hg:{Z:80,w:200.592,name:"Mercury"},Tl:{Z:81,w:204.38,name:"Thallium"},Pb:{Z:82,w:207.2,name:"Lead"},Bi:{Z:83,w:208.9804,name:"Bismuth"},
+      Po:{Z:84,w:209,name:"Polonium"},At:{Z:85,w:210,name:"Astatine"},Rn:{Z:86,w:222,name:"Radon"},
+      Fr:{Z:87,w:223,name:"Francium"},Ra:{Z:88,w:226,name:"Radium"},Ac:{Z:89,w:227,name:"Actinium"},Th:{Z:90,w:232.0377,name:"Thorium"},Pa:{Z:91,w:231.03588,name:"Protactinium"},U:{Z:92,w:238.02891,name:"Uranium"},
+      Np:{Z:93,w:237,name:"Neptunium"},Pu:{Z:94,w:244,name:"Plutonium"},Am:{Z:95,w:243,name:"Americium"},Cm:{Z:96,w:247,name:"Curium"},Bk:{Z:97,w:247,name:"Berkelium"},Cf:{Z:98,w:251,name:"Californium"},Es:{Z:99,w:252,name:"Einsteinium"},
+      Fm:{Z:100,w:257,name:"Fermium"},Md:{Z:101,w:258,name:"Mendelevium"},No:{Z:102,w:259,name:"Nobelium"},Lr:{Z:103,w:266,name:"Lawrencium"},
+      Rf:{Z:104,w:267,name:"Rutherfordium"},Db:{Z:105,w:268,name:"Dubnium"},Sg:{Z:106,w:269,name:"Seaborgium"},Bh:{Z:107,w:270,name:"Bohrium"},Hs:{Z:108,w:277,name:"Hassium"},Mt:{Z:109,w:278,name:"Meitnerium"},Ds:{Z:110,w:281,name:"Darmstadtium"},
+      Rg:{Z:111,w:282,name:"Roentgenium"},Cn:{Z:112,w:285,name:"Copernicium"},Nh:{Z:113,w:286,name:"Nihonium"},Fl:{Z:114,w:289,name:"Flerovium"},Mc:{Z:115,w:290,name:"Moscovium"},Lv:{Z:116,w:293,name:"Livermorium"},Ts:{Z:117,w:294,name:"Tennessine"},Og:{Z:118,w:294,name:"Oganesson"},
     };
 
     // Common elemental molecules (helps with ambiguity like O2-)
@@ -1333,6 +1333,13 @@
       return { total, entries };
     }
 
+    function getElementHint(el){
+      const meta = PT[el];
+      if (!meta) return "";
+      const weight = Number(meta.w).toFixed(3);
+      return `${meta.name} · Z=${meta.Z} · ${weight} g/mol`;
+    }
+
     // -------- Rendering --------
     function renderHistory(){
       const host = historyDrawerList;
@@ -1420,8 +1427,9 @@
         tbody.innerHTML = "";
         for (const e of entries){
           const tr = document.createElement("tr");
+          const hint = getElementHint(e.el);
           tr.innerHTML = `
-            <td class="mono">${e.el}</td>
+            <td class="mono" title="${hint}">${e.el}</td>
             <td class="num">${e.n}</td>
             <td class="num">${e.part.toFixed(4)}</td>
           `;
@@ -1436,9 +1444,10 @@
           </tr>`;
         tbody.innerHTML = "";
         for (const e of entries){
+          const hint = getElementHint(e.el);
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td class="mono">${e.el}</td>
+            <td class="mono" title="${hint}">${e.el}</td>
             <td class="num">${e.pct.toFixed(3)}</td>
             <td class="num">${e.part.toFixed(4)}</td>
           `;
