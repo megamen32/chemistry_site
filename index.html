@@ -1,0 +1,1282 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="Молярная масса и состав" />
+  <meta name="apple-mobile-web-app-title" content="Молярная масса и состав" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="icon" href="/icons/icon-192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" sizes="192x192" />
+  <title>Молярная масса и состав</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#111a33;
+      --card2:#0f1730;
+      --text:#e9ecf5;
+      --muted:#aab3d1;
+      --line:rgba(255,255,255,.10);
+      --accent:#6ee7ff;
+      --accent2:#a78bfa;
+      --bad:#ff6b6b;
+      --ok:#34d399;
+      --shadow:0 12px 30px rgba(0,0,0,.35);
+      --r:18px;
+      --tap:48px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f6f7fb;
+        --card:#ffffff;
+        --card2:#ffffff;
+        --text:#101225;
+        --muted:#5b637a;
+        --line:rgba(16,18,37,.10);
+        --shadow:0 10px 26px rgba(16,18,37,.12);
+      }
+    }
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, -apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(110,231,255,.18), transparent 60%),
+                  radial-gradient(1200px 700px at 110% 10%, rgba(167,139,250,.22), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 14px 92px; /* bottom padding for sticky bar */
+    }
+    header{ padding: 6px 0 10px; }
+    .title{ margin:0; font-size: 20px; letter-spacing:.2px; line-height:1.15; }
+    .sub{ margin:10px 0 0; color:var(--muted); font-size: 13px; line-height: 1.35; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+    @media (min-width: 900px){
+      .grid{ grid-template-columns: 1.1fr .9fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0)) , var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .pad{ padding: 14px; }
+
+    label{ display:block; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+    .field{ position:relative; }
+    input[type="text"]{
+      width:100%;
+      font-size: 18px;
+      padding: 14px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--card2);
+      color: var(--text);
+      outline: none;
+      min-height: var(--tap);
+    }
+    input[type="text"]:focus{
+      border-color: rgba(110,231,255,.55);
+      box-shadow: 0 0 0 4px rgba(110,231,255,.14);
+    }
+    .row{ display:flex; gap:10px; flex-wrap: wrap; align-items:center; }
+    .muted{ color:var(--muted); }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .preview{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      line-height:1.35;
+    }
+    .preview .big{ font-size: 16px; font-weight: 700; }
+    .preview .small{ font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .errCaret{
+      margin-top: 8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,107,107,.35);
+      background: rgba(255,107,107,.08);
+      color: var(--text);
+    }
+    .errCaret pre{
+      margin:0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .seg{
+      display:flex;
+      gap:8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .segGroup{
+      display:flex;
+      border:1px solid var(--line);
+      border-radius: 999px;
+      overflow:hidden;
+      background: rgba(255,255,255,.03);
+    }
+    .segBtn{
+      appearance:none;
+      border:none;
+      background: transparent;
+      color: var(--muted);
+      padding: 10px 12px;
+      font-size: 13px;
+      min-height: 40px;
+      cursor:pointer;
+    }
+    .segBtn.active{
+      color: var(--text);
+      background: linear-gradient(90deg, rgba(110,231,255,.18), rgba(167,139,250,.18));
+    }
+
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .chip{
+      border:1px solid var(--line);
+      color: var(--text);
+      background: rgba(255,255,255,.04);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip:active{ transform: translateY(1px); }
+    .chip.secondary{ color: var(--muted); }
+    .chipsTitle{
+      margin-top: 12px;
+      display:flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .linkBtn{
+      appearance:none;
+      border:none;
+      background:transparent;
+      color: var(--muted);
+      font-size: 12px;
+      cursor:pointer;
+      padding: 6px 8px;
+    }
+
+    .outHeader{
+      display:flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .mass{
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+    .unit{
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 6px;
+      font-weight: 700;
+    }
+    .status{ font-size: 13px; color: var(--muted); }
+    .status.ok{ color: var(--ok); }
+    .status.bad{ color: var(--bad); }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:8px;
+      margin-top: 6px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .kvRow{
+      display:flex;
+      justify-content: space-between;
+      gap:10px;
+      font-size: 13px;
+    }
+    .kvRow .k{ color: var(--muted); }
+    .kvRow .v{ font-variant-numeric: tabular-nums; }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    th, td{
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      text-align:left;
+    }
+    th{ color: var(--muted); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+    tr:last-child td{ border-bottom:none; }
+    td.num{ text-align:right; font-variant-numeric: tabular-nums; }
+
+    .note{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+      line-height: 1.35;
+    }
+
+    /* Sticky action bar */
+    .bar{
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(10,14,30,.72);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+    @media (prefers-color-scheme: light){
+      .bar{
+        background: rgba(255,255,255,.78);
+        border-top: 1px solid rgba(16,18,37,.10);
+      }
+    }
+    .barInner{
+      max-width: 980px;
+      margin: 0 auto;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .btn{
+      appearance:none;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .2px;
+      cursor:pointer;
+      user-select:none;
+      min-height: var(--tap);
+      flex: 0 0 auto;
+    }
+    .btn.primary{
+      flex: 1 1 auto;
+      background: linear-gradient(90deg, rgba(110,231,255,.22), rgba(167,139,250,.22));
+      border-color: rgba(255,255,255,.14);
+    }
+    .btn:active{ transform: translateY(1px); }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 class="title">Формула → состав, молярная масса, массовые доли</h1>
+      <p class="sub">
+        Поддержка: <span class="mono">()</span>/<span class="mono">[]</span>/<span class="mono">{}</span>, коэффициенты (<span class="mono">5H2O</span>), аддукты/кристаллогидраты через <span class="mono">·</span>/<span class="mono">•</span>/<span class="mono">.</span>, заряды (<span class="mono">SO4^2-</span>, <span class="mono">[Fe(CN)6]3-</span>, <span class="mono">NH4+</span>).
+      </p>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="pad">
+          <label for="formula">Формула</label>
+          <div class="field">
+            <input id="formula" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false"
+                   placeholder="Например: K3[Fe(CN)6]·3H2O" />
+          </div>
+
+          <div class="preview" id="previewBox" aria-live="polite">
+            <div class="big" id="pretty">—</div>
+            <div class="small" id="previewMeta">Введите формулу</div>
+          </div>
+
+          <div id="errBox" class="errCaret" style="display:none;">
+            <pre class="mono" id="errCaret"></pre>
+          </div>
+
+          <div class="seg" aria-label="Настройки">
+            <div>
+              <div class="muted" style="font-size:12px;margin-bottom:6px;">Режим</div>
+              <div class="segGroup" role="group" aria-label="Режим">
+                <button class="segBtn" id="modeCompound">Соединение</button>
+                <button class="segBtn" id="modeSum">Сумма (+)</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="muted" style="font-size:12px;margin-bottom:6px;">Сортировка</div>
+              <div class="segGroup" role="group" aria-label="Сортировка">
+                <button class="segBtn" id="sortHill">Hill</button>
+                <button class="segBtn" id="sortZ">Z</button>
+                <button class="segBtn" id="sortAZ">A–Z</button>
+              </div>
+            </div>
+
+            <div>
+              <div class="muted" style="font-size:12px;margin-bottom:6px;">Атомные массы</div>
+              <div class="segGroup" role="group" aria-label="Атомные массы">
+                <button class="segBtn" id="massStd">Стандарт</button>
+                <button class="segBtn" id="massInt">Округл.</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chipsTitle">
+            <span>Примеры / история</span>
+            <button class="linkBtn" id="clearHistoryBtn" title="Очистить историю">Очистить</button>
+          </div>
+          <div class="chips" id="chips">
+            <div class="chip" data-v="K3[Fe(CN)6]·3H2O">K3[Fe(CN)6]·3H2O</div>
+            <div class="chip" data-v="CuSO4·5H2O">CuSO4·5H2O</div>
+            <div class="chip" data-v="[Co(NH3)6]Cl3">[Co(NH3)6]Cl3</div>
+            <div class="chip" data-v="(NH4)2SO4">(NH4)2SO4</div>
+            <div class="chip" data-v="SO4^2-">SO4^2-</div>
+            <div class="chip" data-v="NH4+">NH4+</div>
+          </div>
+
+          <div class="note">
+            Если вводите сумму/смесь, лучше ставить пробелы вокруг <span class="mono">+</span> (например <span class="mono">A + B</span>), иначе можно спутать с зарядом.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="pad">
+          <div class="outHeader">
+            <div>
+              <div class="mass" id="mass">— <span class="unit">g/mol</span></div>
+              <div class="status" id="status">Нет расчёта</div>
+            </div>
+
+            <div class="segGroup" role="group" aria-label="Таблица">
+              <button class="segBtn" id="tabAtoms">Атомы</button>
+              <button class="segBtn" id="tabPct">% масс</button>
+            </div>
+          </div>
+
+          <div class="kv" aria-label="Сводка">
+            <div class="kvRow"><div class="k">Эмпирическая</div><div class="v mono" id="empirical">—</div></div>
+            <div class="kvRow"><div class="k">Заряд (если указан)</div><div class="v mono" id="charge">—</div></div>
+            <div class="kvRow"><div class="k">Формула (норм.)</div><div class="v mono" id="normalized">—</div></div>
+          </div>
+
+          <table aria-label="Состав">
+            <thead id="thead">
+              <tr>
+                <th>Элемент</th>
+                <th class="num">Кол-во</th>
+                <th class="num">g/mol</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <tr><td colspan="3" class="note">Нет данных</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note" id="noteMass">
+            «Стандарт» — усреднённые атомные массы; «Округл.» — близко к школьным, но для реальных расчётов хуже.
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="bar" role="region" aria-label="Действия">
+    <div class="barInner">
+      <button class="btn primary" id="calcBtn">Посчитать</button>
+      <button class="btn" id="copyBtn" title="Скопировать">Копировать</button>
+      <button class="btn" id="shareBtn" title="Поделиться">Поделиться</button>
+    </div>
+  </div>
+
+  <script>
+    // -------- Periodic table (Z + standard atomic weight) --------
+    const PT = {
+      H:{Z:1,w:1.008},He:{Z:2,w:4.002602},
+      Li:{Z:3,w:6.94},Be:{Z:4,w:9.0121831},B:{Z:5,w:10.81},C:{Z:6,w:12.011},N:{Z:7,w:14.007},O:{Z:8,w:15.999},
+      F:{Z:9,w:18.998403163},Ne:{Z:10,w:20.1797},
+      Na:{Z:11,w:22.98976928},Mg:{Z:12,w:24.305},Al:{Z:13,w:26.9815385},Si:{Z:14,w:28.085},P:{Z:15,w:30.973761998},S:{Z:16,w:32.06},
+      Cl:{Z:17,w:35.45},Ar:{Z:18,w:39.948},
+      K:{Z:19,w:39.0983},Ca:{Z:20,w:40.078},Sc:{Z:21,w:44.955908},Ti:{Z:22,w:47.867},V:{Z:23,w:50.9415},Cr:{Z:24,w:51.9961},
+      Mn:{Z:25,w:54.938044},Fe:{Z:26,w:55.845},Co:{Z:27,w:58.933194},Ni:{Z:28,w:58.6934},Cu:{Z:29,w:63.546},Zn:{Z:30,w:65.38},
+      Ga:{Z:31,w:69.723},Ge:{Z:32,w:72.630},As:{Z:33,w:74.921595},Se:{Z:34,w:78.971},Br:{Z:35,w:79.904},Kr:{Z:36,w:83.798},
+      Rb:{Z:37,w:85.4678},Sr:{Z:38,w:87.62},Y:{Z:39,w:88.90584},Zr:{Z:40,w:91.224},Nb:{Z:41,w:92.90637},Mo:{Z:42,w:95.95},
+      Tc:{Z:43,w:98},Ru:{Z:44,w:101.07},Rh:{Z:45,w:102.90550},Pd:{Z:46,w:106.42},Ag:{Z:47,w:107.8682},Cd:{Z:48,w:112.414},
+      In:{Z:49,w:114.818},Sn:{Z:50,w:118.710},Sb:{Z:51,w:121.760},Te:{Z:52,w:127.60},I:{Z:53,w:126.90447},Xe:{Z:54,w:131.293},
+      Cs:{Z:55,w:132.90545196},Ba:{Z:56,w:137.327},
+      La:{Z:57,w:138.90547},Ce:{Z:58,w:140.116},Pr:{Z:59,w:140.90766},Nd:{Z:60,w:144.242},Pm:{Z:61,w:145},Sm:{Z:62,w:150.36},
+      Eu:{Z:63,w:151.964},Gd:{Z:64,w:157.25},Tb:{Z:65,w:158.92535},Dy:{Z:66,w:162.500},Ho:{Z:67,w:164.93033},Er:{Z:68,w:167.259},
+      Tm:{Z:69,w:168.93422},Yb:{Z:70,w:173.045},Lu:{Z:71,w:174.9668},
+      Hf:{Z:72,w:178.49},Ta:{Z:73,w:180.94788},W:{Z:74,w:183.84},Re:{Z:75,w:186.207},Os:{Z:76,w:190.23},Ir:{Z:77,w:192.217},
+      Pt:{Z:78,w:195.084},Au:{Z:79,w:196.966569},Hg:{Z:80,w:200.592},Tl:{Z:81,w:204.38},Pb:{Z:82,w:207.2},Bi:{Z:83,w:208.98040},
+      Po:{Z:84,w:209},At:{Z:85,w:210},Rn:{Z:86,w:222},
+      Fr:{Z:87,w:223},Ra:{Z:88,w:226},Ac:{Z:89,w:227},Th:{Z:90,w:232.0377},Pa:{Z:91,w:231.03588},U:{Z:92,w:238.02891},
+      Np:{Z:93,w:237},Pu:{Z:94,w:244},Am:{Z:95,w:243},Cm:{Z:96,w:247},Bk:{Z:97,w:247},Cf:{Z:98,w:251},Es:{Z:99,w:252},
+      Fm:{Z:100,w:257},Md:{Z:101,w:258},No:{Z:102,w:259},Lr:{Z:103,w:266},
+      Rf:{Z:104,w:267},Db:{Z:105,w:268},Sg:{Z:106,w:269},Bh:{Z:107,w:270},Hs:{Z:108,w:277},Mt:{Z:109,w:278},Ds:{Z:110,w:281},
+      Rg:{Z:111,w:282},Cn:{Z:112,w:285},Nh:{Z:113,w:286},Fl:{Z:114,w:289},Mc:{Z:115,w:290},Lv:{Z:116,w:293},Ts:{Z:117,w:294},Og:{Z:118,w:294},
+    };
+
+    // Common elemental molecules (helps with ambiguity like O2-)
+    const COMMON_ELEMENTAL_MOLECULES = {
+      H: new Set([2]),
+      N: new Set([2]),
+      O: new Set([2]),
+      F: new Set([2]),
+      Cl: new Set([2]),
+      Br: new Set([2]),
+      I: new Set([2]),
+      P: new Set([4]),
+      S: new Set([8]),
+    };
+
+    // "Rounded" atomic weights (not strictly school-perfect for all elements)
+    function atomicWeight(sym, rounded){
+      const w = PT[sym].w;
+      return rounded ? Math.round(w) : w;
+    }
+
+    const $ = (id) => document.getElementById(id);
+
+    // -------- Settings + state --------
+    const LS_KEY = "chemcalc.v2";
+    const state = {
+      mode: "compound",        // "compound" | "sum"
+      sort: "hill",            // "hill" | "z" | "az"
+      weights: "std",          // "std" | "int"
+      tab: "atoms",            // "atoms" | "pct"
+      lastCopyText: "",
+      lastOk: null
+    };
+
+    function loadState(){
+      try{
+        const x = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+        if (x && typeof x === "object"){
+          if (x.mode) state.mode = x.mode;
+          if (x.sort) state.sort = x.sort;
+          if (x.weights) state.weights = x.weights;
+          if (x.tab) state.tab = x.tab;
+        }
+      }catch{}
+    }
+    function saveState(){
+      try{
+        localStorage.setItem(LS_KEY, JSON.stringify({
+          mode: state.mode, sort: state.sort, weights: state.weights, tab: state.tab,
+          history: getHistory()
+        }));
+      }catch{}
+    }
+
+    function getHistory(){
+      try{
+        const x = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+        return Array.isArray(x.history) ? x.history : [];
+      }catch{ return []; }
+    }
+    function setHistory(arr){
+      try{
+        const x = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+        x.history = arr;
+        localStorage.setItem(LS_KEY, JSON.stringify(x));
+      }catch{}
+    }
+    function pushHistory(formula){
+      const f = (formula || "").trim();
+      if (!f) return;
+      const h = getHistory().filter(x => x !== f);
+      h.unshift(f);
+      setHistory(h.slice(0, 10));
+      renderHistory();
+    }
+
+    // -------- UI helpers --------
+    function setActive(btnIds, activeId){
+      for (const id of btnIds){
+        const el = $(id);
+        el.classList.toggle("active", id === activeId);
+      }
+    }
+    function setStatus(msg, kind){
+      const el = $("status");
+      el.classList.remove("ok","bad");
+      if (kind) el.classList.add(kind);
+      el.textContent = msg;
+    }
+    function showErrorCaret(raw, index, message){
+      $("errBox").style.display = "block";
+      const s = raw || "";
+      const i = Math.max(0, Math.min(index ?? 0, s.length));
+      const caretLine = " ".repeat(i) + "^";
+      $("errCaret").textContent = `${message}\n\n${s}\n${caretLine}`;
+    }
+    function hideErrorCaret(){
+      $("errBox").style.display = "none";
+      $("errCaret").textContent = "";
+    }
+
+    // Pretty render
+    const SUB = {'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+    const SUP = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻'};
+    function toSubscripts(s){ return s.replace(/\d/g, d => SUB[d] || d); }
+    function toSuperscripts(s){ return s.replace(/[0-9+\-]/g, ch => SUP[ch] || ch); }
+
+    function normalizeSeparators(raw){
+      return (raw || "")
+        .replace(/\u00B7/g, "·")     // ·
+        .replace(/\u2022/g, "•")     // •
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    // -------- Parsing --------
+    class ParseError extends Error{
+      constructor(message, index){
+        super(message);
+        this.name = "ParseError";
+        this.index = index;
+      }
+    }
+
+    function isDigit(ch){ return ch >= '0' && ch <= '9'; }
+    function isUpper(ch){ return ch >= 'A' && ch <= 'Z'; }
+    function isLower(ch){ return ch >= 'a' && ch <= 'z'; }
+
+    function mergeCounts(dst, src, k=1){
+      for (const [el, n] of Object.entries(src)){
+        dst[el] = (dst[el] || 0) + n * k;
+      }
+    }
+
+    function parseIntFrom(s, i, offset){
+      let j = i;
+      while (j < s.length && isDigit(s[j])) j++;
+      if (j === i) return { val: 1, next: i, had:false };
+      const raw = s.slice(i, j);
+      const val = Number(raw);
+      if (!Number.isFinite(val) || val <= 0) throw new ParseError(`Некорректное число "${raw}"`, offset + i);
+      return { val, next: j, had:true };
+    }
+
+    // Split trailing charge suffix (returns {core, charge:int|null, removedText})
+    function splitChargeSuffix(spec, baseOffset){
+      const s = spec.trim();
+      if (!s) return { core:"", charge:null, removed:"" };
+
+      // Parenthetical charge: ...(2-)
+      {
+        const m = s.match(/^(.*)\((\d+)?([+-])\)\s*$/);
+        if (m){
+          const mag = m[2] ? Number(m[2]) : 1;
+          const sign = m[3] === "+" ? 1 : -1;
+          return { core: m[1], charge: sign * mag, removed: m[0].slice(m[1].length) };
+        }
+      }
+
+      // Caret charge: ...^2-
+      {
+        const m = s.match(/^(.*)\^(\d+)?([+-])\s*$/);
+        if (m){
+          const mag = m[2] ? Number(m[2]) : 1;
+          const sign = m[3] === "+" ? 1 : -1;
+          return { core: m[1], charge: sign * mag, removed: m[0].slice(m[1].length) };
+        }
+      }
+
+      // Trailing sign only: ...+ or ...-
+      {
+        const m = s.match(/^(.*?)([+-])\s*$/);
+        if (m && !m[1].endsWith("^")){
+          // If it's just "+" or "-" with no core: error
+          if (!m[1]) throw new ParseError("Заряд без формулы", baseOffset);
+          return { core: m[1], charge: (m[2] === "+") ? 1 : -1, removed: m[2] };
+        }
+      }
+
+      // digits+sign at end: ambiguous (Fe3+, [Fe(CN)6]3-, NO3- (no digits), NH4+ (no digits))
+      {
+        const m = s.match(/^(.*?)(\d+)([+-])\s*$/);
+        if (m){
+          const base = m[1];
+          const digits = Number(m[2]);
+          const signChar = m[3];
+          const sign = signChar === "+" ? 1 : -1;
+
+          // Special case: if digits after closing bracket and followed by sign => treat digits as charge magnitude
+          const last = base.slice(-1);
+          if (last === ")" || last === "]" || last === "}"){
+            return { core: base, charge: sign * digits, removed: m[2] + m[3] };
+          }
+
+          // Try decide: digits are count (keep) vs charge magnitude (drop)
+          const keepCore = base + m[2]; // treat digits as part of formula
+          const dropCore = base;        // treat digits as charge magnitude
+
+          const tryParse = (core) => {
+            try{
+              const counts = parseSegment(core, baseOffset);
+              return { ok:true, counts };
+            }catch(e){
+              return { ok:false, err:e };
+            }
+          };
+
+          const a = tryParse(keepCore);
+          const b = tryParse(dropCore);
+
+          if (a.ok && b.ok){
+            const distinctA = Object.keys(a.counts).length;
+            const distinctB = Object.keys(b.counts).length;
+
+            // If dropping digits reduces a multi-element formula (NH4 -> NH), keep digits.
+            if (distinctA >= 2) return { core: keepCore, charge: sign * 1, removed: signChar };
+
+            // Single-element ambiguity: prefer common elemental molecules counts; else treat digits as charge magnitude.
+            const keysA = Object.keys(a.counts);
+            if (keysA.length === 1){
+              const el = keysA[0];
+              const cnt = a.counts[el];
+              const common = COMMON_ELEMENTAL_MOLECULES[el] && COMMON_ELEMENTAL_MOLECULES[el].has(cnt);
+              if (common) return { core: keepCore, charge: sign * 1, removed: signChar };
+              return { core: dropCore, charge: sign * digits, removed: m[2] + signChar };
+            }
+
+            // Fallback: keep digits (safer for real formulas)
+            return { core: keepCore, charge: sign * 1, removed: signChar };
+          }
+
+          if (a.ok && !b.ok){
+            // If only keepCore parses, digits are part of formula; charge magnitude 1
+            return { core: keepCore, charge: sign * 1, removed: signChar };
+          }
+          if (!a.ok && b.ok){
+            // If only dropCore parses, digits are charge magnitude
+            return { core: dropCore, charge: sign * digits, removed: m[2] + signChar };
+          }
+
+          // Both failed: keep as-is and let downstream error show
+          return { core: s, charge: null, removed: "" };
+        }
+      }
+
+      return { core: s, charge: null, removed: "" };
+    }
+
+    function parseSegment(seg, offset){
+      // Accept (), [], {}
+      const openers = new Set(['(', '[', '{']);
+      const closers = new Set([')', ']', '}']);
+      const closerToOpener = {')':'(',']':'[','}':'{'};
+
+      const stack = [Object.create(null)];
+      const openerStack = []; // {ch,pos}
+
+      let i = 0;
+      while (i < seg.length){
+        const ch = seg[i];
+
+        if (ch === " "){
+          i++;
+          continue;
+        }
+
+        if (openers.has(ch)){
+          stack.push(Object.create(null));
+          openerStack.push({ ch, pos: offset + i });
+          i++;
+          continue;
+        }
+
+        if (closers.has(ch)){
+          if (stack.length === 1) throw new ParseError(`Лишняя закрывающая скобка "${ch}"`, offset + i);
+          const need = closerToOpener[ch];
+          const last = openerStack.pop();
+          if (!last || last.ch !== need) throw new ParseError(`Скобки не совпадают: закрыли "${ch}"`, offset + i);
+
+          i++;
+          const { val: mult, next } = parseIntFrom(seg, i, offset);
+          i = next;
+
+          const top = stack.pop();
+          mergeCounts(stack[stack.length-1], top, mult);
+          continue;
+        }
+
+        if (isUpper(ch)){
+          let sym = ch;
+          if (i+1 < seg.length && isLower(seg[i+1])) sym += seg[i+1];
+          if (!PT[sym]) throw new ParseError(`Неизвестный элемент: ${sym}`, offset + i);
+
+          i += sym.length;
+          const { val: cnt, next } = parseIntFrom(seg, i, offset);
+          i = next;
+
+          stack[stack.length-1][sym] = (stack[stack.length-1][sym] || 0) + cnt;
+          continue;
+        }
+
+        if (isDigit(ch)){
+          throw new ParseError(`Число в неожиданном месте`, offset + i);
+        }
+
+        // Disallow reaction / separators here
+        if (ch === "·" || ch === "•" || ch === "." || ch === "+" || ch === "=" || ch === "→" || ch === ">" || ch === "<"){
+          throw new ParseError(`Разделитель "${ch}" должен быть на верхнем уровне`, offset + i);
+        }
+
+        throw new ParseError(`Недопустимый символ "${ch}"`, offset + i);
+      }
+
+      if (openerStack.length){
+        const last = openerStack[openerStack.length-1];
+        throw new ParseError(`Не закрыта скобка "${last.ch}"`, last.pos);
+      }
+
+      return stack[0];
+    }
+
+    function splitTopLevelByHydrate(raw){
+      // split by · • . at top level (not inside brackets)
+      const s = raw;
+      const parts = [];
+      let buf = "";
+      let depth = 0;
+      for (let i=0;i<s.length;i++){
+        const ch = s[i];
+        if (ch === "(" || ch === "[" || ch === "{") depth++;
+        if (ch === ")" || ch === "]" || ch === "}") depth = Math.max(0, depth-1);
+
+        const isDot = (ch === "·" || ch === "•" || ch === ".");
+        if (isDot && depth === 0){
+          if (buf.trim()) parts.push({ text: buf.trim(), offset: i - buf.length });
+          buf = "";
+          continue;
+        }
+        buf += ch;
+      }
+      if (buf.trim()) parts.push({ text: buf.trim(), offset: s.length - buf.length });
+      return parts;
+    }
+
+    function isReactionLike(raw){
+      const s = raw;
+      return s.includes("->") || s.includes("→") || s.includes("⇌") || s.includes("<->") || s.includes("=") || s.includes("⇒");
+    }
+
+    function parseOneSpecies(specText, baseOffset){
+      // Leading coefficient: 5H2O
+      let s = specText.trim();
+      let coef = 1;
+      {
+        const m = s.match(/^(\d+)\s*(.*)$/);
+        if (m){
+          const c = Number(m[1]);
+          if (!Number.isFinite(c) || c <= 0) throw new ParseError(`Некорректный коэффициент "${m[1]}"`, baseOffset);
+          // If it's purely digits (no formula after) -> error
+          if (!m[2]) throw new ParseError("После коэффициента должна быть формула", baseOffset);
+          coef = c;
+          s = m[2].trim();
+          baseOffset += (m[0].length - m[2].length);
+        }
+      }
+
+      // Charge suffix
+      const ch = splitChargeSuffix(s, baseOffset);
+      const core = ch.core.trim();
+      if (!core) throw new ParseError("Пустая формула (остался только заряд?)", baseOffset);
+
+      const counts = parseSegment(core, baseOffset);
+      return { counts, coef, charge: ch.charge };
+    }
+
+    function parseFormula(raw){
+      const normalized = normalizeSeparators(raw);
+
+      if (!normalized) throw new ParseError("Пустая формула", 0);
+      if (isReactionLike(normalized)) throw new ParseError("Это похоже на уравнение реакции. Введите формулу вещества (или включите режим «Сумма (+)» без стрелок).", 0);
+
+      // Mode split (sum/mixture)
+      let species = [];
+      if (state.mode === "sum"){
+        // Split on plus with some tolerance, but not inside brackets.
+        const s = normalized;
+        let buf = "";
+        let depth = 0;
+        let start = 0;
+        const flush = (endIdx) => {
+          const t = buf.trim();
+          if (t) species.push({ text: t, offset: start + (buf.indexOf(t)) });
+          buf = "";
+          start = endIdx + 1;
+        };
+
+        for (let i=0;i<s.length;i++){
+          const ch = s[i];
+          if (ch === "(" || ch === "[" || ch === "{") depth++;
+          if (ch === ")" || ch === "]" || ch === "}") depth = Math.max(0, depth-1);
+
+          if (ch === "+" && depth === 0){
+            // treat as separator only if there is something meaningful on both sides (not charge at end)
+            const leftNonSpace = (buf.replace(/\s+$/,"").slice(-1));
+            const right = s.slice(i+1);
+            const rightNonSpace = right.replace(/^\s+/,"")[0] || "";
+            if (rightNonSpace){ // something after
+              flush(i);
+              continue;
+            }
+          }
+          buf += ch;
+        }
+        if (buf.trim()) species.push({ text: buf.trim(), offset: start + (buf.indexOf(buf.trim())) });
+
+        if (species.length === 0) throw new ParseError("Пустая сумма", 0);
+      } else {
+        if (normalized.includes("+")){
+          // In compound mode '+' is almost always an equation/mixture marker.
+          throw new ParseError("Обнаружен '+'. Это смесь/уравнение. Включите режим «Сумма (+)» или уберите '+'.", normalized.indexOf("+"));
+        }
+        species = [{ text: normalized, offset: 0 }];
+      }
+
+      const totalCounts = Object.create(null);
+      let totalCharge = 0;
+      let chargeKnown = false;
+
+      for (const sp of species){
+        // Split hydrates at top-level: CuSO4·5H2O etc
+        const hydrateParts = splitTopLevelByHydrate(sp.text);
+        if (hydrateParts.length === 0) throw new ParseError("Пустая часть формулы", sp.offset);
+
+        for (const hp of hydrateParts){
+          const parsed = parseOneSpecies(hp.text, sp.offset + hp.offset);
+          mergeCounts(totalCounts, parsed.counts, parsed.coef);
+
+          if (parsed.charge !== null && parsed.charge !== undefined){
+            totalCharge += parsed.charge * parsed.coef;
+            chargeKnown = true;
+          }
+        }
+      }
+
+      return { counts: totalCounts, charge: chargeKnown ? totalCharge : null, normalized };
+    }
+
+    // -------- Chemistry outputs --------
+    function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ const t=a%b; a=b; b=t; } return a; }
+    function empiricalFormula(counts){
+      const els = Object.keys(counts);
+      if (!els.length) return "";
+      let g = 0;
+      for (const e of els){
+        const n = counts[e];
+        g = g ? gcd(g, n) : n;
+      }
+      if (!g || g === 1) return formatFormula(counts, 1);
+      const reduced = Object.create(null);
+      for (const e of els) reduced[e] = counts[e] / g;
+      return formatFormula(reduced, 1);
+    }
+
+    function formatFormula(counts, sortMode){
+      // sortMode: "hill" | "z" | "az"
+      const entries = Object.entries(counts).map(([el,n]) => ({el,n, Z:PT[el]?.Z || 999}));
+      const hasC = counts.C !== undefined;
+
+      let ordered;
+      if (sortMode === "z"){
+        ordered = entries.sort((a,b) => a.Z - b.Z);
+      } else if (sortMode === "az"){
+        ordered = entries.sort((a,b) => a.el.localeCompare(b.el));
+      } else {
+        // Hill
+        if (hasC){
+          const rest = entries.filter(x => x.el !== "C" && x.el !== "H").sort((a,b) => a.el.localeCompare(b.el));
+          ordered = [];
+          if (counts.C) ordered.push(entries.find(x => x.el === "C"));
+          if (counts.H) ordered.push(entries.find(x => x.el === "H"));
+          ordered.push(...rest);
+        } else {
+          ordered = entries.sort((a,b) => a.el.localeCompare(b.el));
+        }
+      }
+
+      return ordered.map(x => x.el + (x.n === 1 ? "" : String(x.n))).join("");
+    }
+
+    function computeMass(counts){
+      const rounded = state.weights === "int";
+      let m = 0;
+      for (const [el, n] of Object.entries(counts)){
+        m += atomicWeight(el, rounded) * n;
+      }
+      return m;
+    }
+
+    function buildTable(counts){
+      const rounded = state.weights === "int";
+      const total = computeMass(counts);
+      const entries = Object.entries(counts).map(([el,n]) => {
+        const aw = atomicWeight(el, rounded);
+        const part = aw * n;
+        const pct = total ? (part / total) * 100 : 0;
+        return { el, n, aw, part, pct, Z: PT[el].Z };
+      });
+
+      // sort
+      if (state.sort === "z") entries.sort((a,b) => a.Z - b.Z);
+      else if (state.sort === "az") entries.sort((a,b) => a.el.localeCompare(b.el));
+      else {
+        // Hill
+        const hasC = counts.C !== undefined;
+        if (hasC){
+          const c = entries.filter(x => x.el === "C");
+          const h = entries.filter(x => x.el === "H");
+          const rest = entries.filter(x => x.el !== "C" && x.el !== "H").sort((a,b) => a.el.localeCompare(b.el));
+          entries.length = 0;
+          entries.push(...c, ...h, ...rest);
+        } else {
+          entries.sort((a,b) => a.el.localeCompare(b.el));
+        }
+      }
+
+      return { total, entries };
+    }
+
+    // -------- Rendering --------
+    function renderHistory(){
+      const host = $("chips");
+      const fixed = [
+        "K3[Fe(CN)6]·3H2O",
+        "CuSO4·5H2O",
+        "[Co(NH3)6]Cl3",
+        "(NH4)2SO4",
+        "SO4^2-",
+        "NH4+",
+      ];
+      host.innerHTML = "";
+      for (const x of fixed){
+        const d = document.createElement("div");
+        d.className = "chip";
+        d.dataset.v = x;
+        d.textContent = x;
+        host.appendChild(d);
+      }
+
+      const h = getHistory();
+      if (h.length){
+        for (const x of h){
+          const d = document.createElement("div");
+          d.className = "chip secondary";
+          d.dataset.v = x;
+          d.textContent = x;
+          host.appendChild(d);
+        }
+      }
+
+      host.querySelectorAll(".chip").forEach(ch => {
+        ch.addEventListener("click", () => {
+          $("formula").value = ch.dataset.v;
+          calculate(true);
+        });
+      });
+    }
+
+    function renderPreview(raw){
+      const s = normalizeSeparators(raw);
+      if (!s){
+        $("pretty").textContent = "—";
+        $("previewMeta").textContent = "Введите формулу";
+        return;
+      }
+
+      // basic pretty: subscripts for digits; keep dots as ·; keep +/- and ^ as-is
+      // show charge with superscripts if it's trailing and uses ^ or digits+sign or sign
+      let pretty = s
+        .replace(/\./g, "·")
+        .replace(/•/g, "·");
+
+      // try render caret charge: ^2- -> ²⁻
+      pretty = pretty.replace(/\^(\d+)?([+-])\b/g, (_, d, sign) => toSuperscripts((d || "") + sign));
+      // render trailing parenthetical charge: (2-) -> ²⁻
+      pretty = pretty.replace(/\((\d+)?([+-])\)\b/g, (_, d, sign) => toSuperscripts((d || "") + sign));
+      // render remaining digits as subscripts
+      pretty = pretty.replace(/\d+/g, m => [...m].map(c => SUB[c] || c).join(""));
+
+      $("pretty").textContent = pretty;
+
+      const modeTxt = state.mode === "sum" ? "Сумма (+)" : "Соединение";
+      const sortTxt = state.sort === "hill" ? "Hill" : (state.sort === "z" ? "Z" : "A–Z");
+      const wTxt = state.weights === "std" ? "Стандартные массы" : "Округлённые массы";
+      $("previewMeta").textContent = `${modeTxt} · ${sortTxt} · ${wTxt}`;
+    }
+
+    function renderTable(counts){
+      const tbody = $("tbody");
+      const thead = $("thead");
+
+      const { total, entries } = buildTable(counts);
+
+      if (!entries.length){
+        tbody.innerHTML = `<tr><td colspan="3" class="note">Нет данных</td></tr>`;
+        return { total: 0, copy:"" };
+      }
+
+      if (state.tab === "atoms"){
+        thead.innerHTML = `
+          <tr>
+            <th>Элемент</th>
+            <th class="num">Кол-во</th>
+            <th class="num">g/mol</th>
+          </tr>`;
+        tbody.innerHTML = "";
+        for (const e of entries){
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="mono">${e.el}</td>
+            <td class="num">${e.n}</td>
+            <td class="num">${e.part.toFixed(4)}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      } else {
+        thead.innerHTML = `
+          <tr>
+            <th>Элемент</th>
+            <th class="num">%</th>
+            <th class="num">g/mol</th>
+          </tr>`;
+        tbody.innerHTML = "";
+        for (const e of entries){
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="mono">${e.el}</td>
+            <td class="num">${e.pct.toFixed(3)}</td>
+            <td class="num">${e.part.toFixed(4)}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      }
+
+      const rounded = state.weights === "int";
+      const copyLines = entries.map(e => `${e.el}:${e.n}`).join(", ");
+      const copy = `Формула: ${$("formula").value.trim()}
+Состав: ${copyLines}
+Молярная масса: ${total.toFixed(6)} g/mol${rounded ? " (округл. массы)" : ""}`;
+
+      return { total, copy };
+    }
+
+    function renderAll(parsed){
+      hideErrorCaret();
+
+      const counts = parsed.counts;
+      const mass = computeMass(counts);
+
+      $("mass").innerHTML = `${mass.toFixed(6)} <span class="unit">g/mol</span>`;
+      $("normalized").textContent = formatFormula(counts, state.sort);
+      $("empirical").textContent = empiricalFormula(counts) || "—";
+      $("charge").textContent = (parsed.charge === null) ? "—" : (parsed.charge > 0 ? `+${parsed.charge}` : `${parsed.charge}`);
+
+      const { copy } = renderTable(counts);
+      state.lastCopyText = copy;
+      state.lastOk = parsed;
+
+      setStatus("Ок", "ok");
+      pushHistory($("formula").value.trim());
+      saveState();
+    }
+
+    // -------- Main calculate --------
+    function calculate(fromChip=false){
+      const raw = $("formula").value;
+
+      renderPreview(raw);
+
+      try{
+        const parsed = parseFormula(raw);
+        renderAll(parsed);
+      }catch(err){
+        state.lastCopyText = "";
+        state.lastOk = null;
+        $("mass").innerHTML = `— <span class="unit">g/mol</span>`;
+        $("empirical").textContent = "—";
+        $("charge").textContent = "—";
+        $("normalized").textContent = "—";
+        $("tbody").innerHTML = `<tr><td colspan="3" class="note">Нет данных</td></tr>`;
+        setStatus(err.message || String(err), "bad");
+
+        const idx = (err && typeof err.index === "number") ? err.index : 0;
+        showErrorCaret(raw, idx, err.message || String(err));
+      }
+    }
+
+    // -------- Clipboard / Share --------
+    async function copyResult(){
+      if (!state.lastCopyText){
+        setStatus("Нечего копировать", "bad");
+        return;
+      }
+      try{
+        await navigator.clipboard.writeText(state.lastCopyText);
+        setStatus("Скопировано", "ok");
+      }catch{
+        const ta = document.createElement("textarea");
+        ta.value = state.lastCopyText;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        setStatus("Скопировано", "ok");
+      }
+    }
+
+    async function shareResult(){
+      if (!state.lastCopyText){
+        setStatus("Нечего отправлять", "bad");
+        return;
+      }
+      if (navigator.share){
+        try{
+          await navigator.share({ text: state.lastCopyText });
+          setStatus("Отправлено", "ok");
+          return;
+        }catch{}
+      }
+      // fallback to copy
+      await copyResult();
+    }
+
+    // -------- Bind UI --------
+    function bindSettings(){
+      // mode
+      $("modeCompound").onclick = () => { state.mode="compound"; setActive(["modeCompound","modeSum"], "modeCompound"); saveState(); renderPreview($("formula").value); calculate(); };
+      $("modeSum").onclick = () => { state.mode="sum"; setActive(["modeCompound","modeSum"], "modeSum"); saveState(); renderPreview($("formula").value); calculate(); };
+
+      // sort
+      $("sortHill").onclick = () => { state.sort="hill"; setActive(["sortHill","sortZ","sortAZ"], "sortHill"); saveState(); calculate(); };
+      $("sortZ").onclick = () => { state.sort="z"; setActive(["sortHill","sortZ","sortAZ"], "sortZ"); saveState(); calculate(); };
+      $("sortAZ").onclick = () => { state.sort="az"; setActive(["sortHill","sortZ","sortAZ"], "sortAZ"); saveState(); calculate(); };
+
+      // weights
+      $("massStd").onclick = () => { state.weights="std"; setActive(["massStd","massInt"], "massStd"); saveState(); calculate(); };
+      $("massInt").onclick = () => { state.weights="int"; setActive(["massStd","massInt"], "massInt"); saveState(); calculate(); };
+
+      // tabs
+      $("tabAtoms").onclick = () => { state.tab="atoms"; setActive(["tabAtoms","tabPct"], "tabAtoms"); saveState(); calculate(); };
+      $("tabPct").onclick = () => { state.tab="pct"; setActive(["tabAtoms","tabPct"], "tabPct"); saveState(); calculate(); };
+    }
+
+    function applyStateToUI(){
+      setActive(["modeCompound","modeSum"], state.mode === "sum" ? "modeSum" : "modeCompound");
+      setActive(["sortHill","sortZ","sortAZ"],
+        state.sort === "z" ? "sortZ" : (state.sort === "az" ? "sortAZ" : "sortHill"));
+      setActive(["massStd","massInt"], state.weights === "int" ? "massInt" : "massStd");
+      setActive(["tabAtoms","tabPct"], state.tab === "pct" ? "tabPct" : "tabAtoms");
+    }
+
+    // -------- Init --------
+    loadState();
+    renderHistory();
+    bindSettings();
+    applyStateToUI();
+
+    $("calcBtn").addEventListener("click", () => calculate());
+    $("copyBtn").addEventListener("click", copyResult);
+    $("shareBtn").addEventListener("click", shareResult);
+
+    $("clearHistoryBtn").addEventListener("click", () => {
+      setHistory([]);
+      renderHistory();
+      setStatus("История очищена", "ok");
+    });
+
+    // debounce input
+    let t = null;
+    $("formula").addEventListener("input", () => {
+      clearTimeout(t);
+      t = setTimeout(() => calculate(), 320);
+    });
+
+    // initial formula
+    const h = getHistory();
+    if (h.length) $("formula").value = h[0];
+    renderPreview($("formula").value);
+    if ($("formula").value) calculate();
+    else setStatus("Введите формулу", "");
+
+    // Optional self-tests in console: ?test=1
+    if (location.search.includes("test=1")){
+      const tests = [
+        ["H2O", {H:2,O:1}],
+        ["CuSO4·5H2O", {Cu:1,S:1,O:9,H:10}],
+        ["K3[Fe(CN)6]", {K:3,Fe:1,C:6,N:6}],
+        ["[Fe(CN)6]3-", {Fe:1,C:6,N:6}],
+        ["SO4^2-", {S:1,O:4}],
+        ["NH4+", {N:1,H:4}],
+      ];
+      for (const [f, expected] of tests){
+        try{
+          const p = parseFormula(f);
+          const got = p.counts;
+          const ok = JSON.stringify(got) === JSON.stringify(expected);
+          console.log(ok ? "OK" : "FAIL", f, got, expected);
+        }catch(e){
+          console.log("ERR", f, e);
+        }
+      }
+    }
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/sw.js')
+          .catch(() => {
+            /* Service worker failures are non-fatal; offline fallback still works */
+          });
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.bezrabotnyi.chemistry.twa",
+      "sha256_cert_fingerprints": [
+        "66:83:DA:72:14:C5:28:48:AE:32:80:42:9B:52:61:EE:8F:2A:E3:93:7B:33:83:26:00:C6:42:CD:CD:D6:7C:BA"
+      ]
+    }
+  }
+]
