@@ -58,6 +58,12 @@
       padding: 18px 14px 92px; /* bottom padding for sticky bar */
     }
     header{ padding: 6px 0 10px; }
+    .headerTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+    }
     .title{ margin:0; font-size: 20px; letter-spacing:.2px; line-height:1.15; }
     .sub{ margin:10px 0 0; color:var(--muted); font-size: 13px; line-height: 1.35; }
 
@@ -249,11 +255,17 @@
     .historyTrigger{
       display:flex;
       justify-content:flex-end;
-      margin-top: 10px;
+      margin-top: 12px;
     }
     .historyTrigger .linkBtn{
+      display:flex;
+      align-items:center;
+      gap:6px;
       font-size: 12px;
       padding: 6px 10px;
+    }
+    .historyTrigger .historyIcon{
+      font-size: 14px;
     }
     .concentrationDetails{
       margin-top: 18px;
@@ -464,7 +476,15 @@
 <body>
   <div class="wrap">
     <header>
-      <h1 class="title">Формула → состав, молярная масса, массовые доли</h1>
+      <div class="headerTop">
+        <h1 class="title">Формула → состав, молярная масса, массовые доли</h1>
+        <div class="historyTrigger">
+          <button class="linkBtn" id="openHistoryBtn" type="button" title="Показать историю">
+            <span class="historyIcon" aria-hidden="true">☰</span>
+            История <span class="mono" id="historyCount">0</span>
+          </button>
+        </div>
+      </div>
       <p class="sub">
         Поддержка: <span class="mono">()</span>/<span class="mono">[]</span>/<span class="mono">{}</span>, коэффициенты (<span class="mono">5H2O</span>), аддукты/кристаллогидраты через <span class="mono">·</span>/<span class="mono">•</span>/<span class="mono">.</span>, заряды (<span class="mono">SO4^2-</span>, <span class="mono">[Fe(CN)6]3-</span>, <span class="mono">NH4+</span>).
       </p>
@@ -486,12 +506,6 @@
 
           <div id="errBox" class="errCaret" style="display:none;">
             <pre class="mono" id="errCaret"></pre>
-          </div>
-
-          <div class="historyTrigger">
-            <button class="linkBtn" id="openHistoryBtn" type="button">
-              История <span class="mono" id="historyCount">0</span>
-            </button>
           </div>
 
           <div class="seg" aria-label="Настройки">
